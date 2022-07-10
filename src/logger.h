@@ -10,11 +10,7 @@ extern "C" {
 #include <stdio.h>
 #include <time.h>
 
-#include "typecheck.h"
-
-#ifndef ENABLE_LOGGING
-#define LOG(level, stream, msg, ...) ({})
-#else
+#include "../types/typecheck.h"
 
 enum LogLevel {
     LL_ERROR = 0,
@@ -24,7 +20,11 @@ enum LogLevel {
     LL_TRACE = 4
 };
 
-static int __min_log_level__ = LL_DEBUG;
+static int __min_log_level__ = LL_TRACE;
+
+#ifndef ENABLE_LOGGING
+#define LOG(level, stream, msg, ...) ({})
+#else
 
 static inline char* logLevelToString(int level) {
     if (level == LL_ERROR)  {
@@ -47,19 +47,28 @@ static inline char* logLevelToString(int level) {
 
 #define __FILENAME__ (strrchr("/" __FILE__, '/') + 1)
 
+#ifdef LOG_DATETIME_PREFIX
+#define __GET_DATETIME_FORMAT_VALUES timeinfo->tm_mday, timeinfo->tm_mon + 1, timeinfo->tm_year + 1900, timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec,
+#define __DATETIME_PREFIX "[%d/%d/%d %d:%d:%d] "
+#define __DEFINE_DATETIME_STRUCTS time_t rawtime; time(&rawtime); struct tm* timeinfo = localtime(&rawtime);
+#else
+#define __GET_DATETIME_FORMAT_VALUES
+#define __DATETIME_PREFIX ""
+#define __DEFINE_DATETIME_STRUCTS ({});
+#endif
+
 #define LOG(level, msg, ...) { \
     if (typename(level) != T_INT) { \
-        fprintf(STDERR, "Expected integer log level");\
-        exit(1);
+        fprintf(STDERR, "Expected integer log level"); \
+        exit(1); \
     } \
-    if (level <= __min_log_level__) {   \
-        time_t rawtime; \
-        struct tm* timeinfo; \
-        time(&rawtime); \
-        timeinfo = localtime(&rawtime); \
-        fprintf(level == LL_ERROR ? STDERR : STDOUT, "[%d/%d/%d %d:%d:%d] %s(%s:%d) [%s] :: " msg "\n", \
-            timeinfo->tm_mday, timeinfo->tm_mon + 1, timeinfo->tm_year + 1900, \
-            timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec, \
+    if (level <= __min_log_level__) { \
+        __DEFINE_DATETIME_STRUCTS; \
+        fprintf(               \
+            level == LL_ERROR ? STDERR : STDOUT, \
+            __DATETIME_PREFIX "%s(%s:%d) [%s] :: " \
+            msg "\n", \
+            __GET_DATETIME_FORMAT_VALUES \
             __func__, __FILENAME__, __LINE__, \
             logLevelToString(level), \
             ##__VA_ARGS__ \
@@ -71,7 +80,7 @@ static inline char* logLevelToString(int level) {
 //#define LOG(level, msg, ...) printf(msg "\n", ##__VA_ARGS__)
 
 #define ERROR(msg, ...) (LOG(LL_ERROR, msg, ##__VA_ARGS__))
-#define WARN(msg, ...) (LOG(LL_WARN, msg,## __VA_ARGS__))
+#define WARN(msg, ...) (LOG(LL_WARN, msg, ##__VA_ARGS__))
 #define INFO(msg, ...) (LOG(LL_INFO, msg, ##__VA_ARGS__))
 #define DEBUG(msg, ...) (LOG(LL_DEBUG, msg, ##__VA_ARGS__))
 #define TRACE(msg, ...) (LOG(LL_TRACE, msg, ##__VA_ARGS__))
