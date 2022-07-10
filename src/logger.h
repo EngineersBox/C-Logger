@@ -60,7 +60,7 @@ static inline char* logLevelToString(int level) {
         fprintf(level == LL_ERROR ? STDERR : STDOUT, "[%d/%d/%d %d:%d:%d] %s(%s:%d) [%s] :: " msg "\n", \
             timeinfo->tm_mday, timeinfo->tm_mon + 1, timeinfo->tm_year + 1900, \
             timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec, \
-            __FILENAME__, __func__, __LINE__, \
+            __func__, __FILENAME__, __LINE__, \
             logLevelToString(level), \
             ##__VA_ARGS__ \
         ); \
