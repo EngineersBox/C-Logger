@@ -99,14 +99,15 @@ static inline char* logLevelToString(int level) {
 #endif
 
 #define LOG(level, msg, ...) { \
-    if (typename(level) != T_INT) { \
+        if (typename(level) != T_INT) { \
         fprintf(STDERR, "Expected integer log level"); \
         exit(1); \
     } \
     if (level <= MIN_LOG_LEVEL) { \
-        __DEFINE_DATETIME_STRUCTS; \
-        fprintf(               \
-            level == LL_ERROR ? STDERR : STDOUT, \
+        __DEFINE_DATETIME_STRUCTS;  \
+        char logEntry[4096]; \
+        sprintf( \
+            logEntry, \
             __DATETIME_PREFIX "%s(%s:%d) [%s] :: " \
             msg "\n", \
             __GET_DATETIME_FORMAT_VALUES \
@@ -114,17 +115,10 @@ static inline char* logLevelToString(int level) {
             logLevelToString(level), \
             ##__VA_ARGS__ \
         ); \
+        fprintf(level == LL_ERROR ? STDERR : STDOUT, logEntry); \
         fflush(level == LL_ERROR ? STDERR : STDOUT); \
         if (__LOG_FILE_HANDLE__ != NULL) {\
-            fprintf( \
-                __LOG_FILE_HANDLE__, \
-                __DATETIME_PREFIX "%s(%s:%d) [%s] :: " \
-                msg "\n", \
-                __GET_DATETIME_FORMAT_VALUES \
-                __func__, __FILENAME__, __LINE__, \
-                logLevelToString(level), \
-                ##__VA_ARGS__ \
-            ); \
+            fprintf( __LOG_FILE_HANDLE__, logEntry); \
             fflush(__LOG_FILE_HANDLE__); \
         }\
     } \
