@@ -75,7 +75,9 @@ extern __thread FILE* logFileHandle;
 #endif
 
 static inline char* logLevelToString(int level) {
-    if (level == LL_ERROR)  {
+    if (level == LL_FATAL) {
+        return "FATAL";
+    } else if (level == LL_ERROR)  {
         return "ERROR";
     } else if (level == LL_WARN) {
         return "WARN ";
