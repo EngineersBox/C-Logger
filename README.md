@@ -10,6 +10,7 @@ Simple logging macro for C projects
 
 ## Levels
 
+* `LL_FATAL` (Exits with code 1 after logging)
 * `LL_ERROR`
 * `LL_WARN`
 * `LL_INFO`
@@ -18,7 +19,8 @@ Simple logging macro for C projects
 
 ## Macros
 
-* `LOG(level, msg, ...`
+* `LOG(level, msg, ...)`
+* `FATAL(msg, ...)`
 * `ERROR(msg, ...)`
 * `WARN(msg, ...)`
 * `INFO(msg, ...)`
