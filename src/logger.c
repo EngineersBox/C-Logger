@@ -1,4 +1,4 @@
 #include "logging.h"
 
-__thread char logFileName[1024] = "";
-__thread FILE* logFileHandle = NULL;
+volatile char logFileName[1024] = "";
+volatile FILE* logFileHandle = NULL;
